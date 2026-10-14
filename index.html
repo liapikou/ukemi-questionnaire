@@ -113,7 +113,7 @@ footer{margin-top:40px;display:flex;justify-content:flex-end}
 (function(){
 "use strict";
 /* ====== PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE ====== */
-const VERSION="v2";
+const VERSION="v3";
 const SUBMIT_URL="https://script.google.com/macros/s/AKfycbwSvzw_RsCrdW5y6mKbUM4VdgPsucSB6AH7rRPYgxDt04VYJe3HkWV-c6R_e_CwgWmY/exec";
 
 /* ================= TEXT ================= */
@@ -223,6 +223,7 @@ const L={
  wrists:{foot:[.71,.705],ankle:[.65,.70],knee:[.585,.61],hip:[.49,.783],lspine:[.44,.778],chest:[.40,.775],neck:[.36,.755],head:[.315,.715],elbow:[.475,.80],wrist:[.585,.808]},
  end:{foot:[.71,.71],ankle:[.65,.71],knee:[.585,.62],hip:[.49,.784],lspine:[.44,.779],chest:[.40,.776],neck:[.36,.756],head:[.315,.716],elbow:[.475,.802],wrist:[.585,.808]}
 };
+L.slap=Object.assign({},L.shoulders,{elbow:L.wrists.elbow,wrist:L.wrists.wrist});
 const SUPINE={foot:[.70,.70],ankle:[.64,.71],knee:[.58,.60],hip:[.50,.785],lspine:[.44,.775],chest:[.40,.775],neck:[.36,.755],head:[.315,.715]};
 const sup=(e,w)=>Object.assign({},SUPINE,{elbow:e,wrist:w});
 const LEVELS=[
@@ -233,16 +234,16 @@ const LEVELS=[
  {id:"seated",jp:"長座",dur:2.8,kf:[
   {t:0,c:null,p:{foot:[.80,.745],ankle:[.73,.745],knee:[.62,.73],hip:[.47,.775],lspine:[.45,.665],chest:[.44,.55],neck:[.45,.47],head:[.47,.435],elbow:[.53,.60],wrist:[.615,.55]}},
   {t:.14,c:null,p:{foot:[.79,.725],ankle:[.72,.725],knee:[.61,.70],hip:[.475,.783],lspine:[.45,.71],chest:[.445,.61],neck:[.45,.525],head:[.475,.49],elbow:[.53,.645],wrist:[.605,.595]}},
-  {t:.42,c:"wrists",p:L.shoulders},{t:.48,c:"shoulders",p:L.elbows},{t:.84,c:null,p:L.wrists},{t:1,c:null,p:L.end}]},
+  {t:.42,c:"wrists",p:L.slap},{t:.48,c:"shoulders",p:L.wrists},{t:.84,c:null,p:L.end},{t:1,c:null,p:L.end}]},
  {id:"squat",jp:"しゃがんで",dur:2.6,kf:[
   {t:0,c:null,p:{foot:[.61,.795],ankle:[.565,.79],knee:[.61,.65],hip:[.50,.59],lspine:[.49,.50],chest:[.485,.41],neck:[.485,.345],head:[.505,.31],elbow:[.56,.47],wrist:[.635,.475]}},
   {t:.22,c:"hips",p:{foot:[.60,.785],ankle:[.55,.78],knee:[.60,.665],hip:[.485,.775],lspine:[.455,.695],chest:[.455,.60],neck:[.465,.52],head:[.495,.485],elbow:[.535,.64],wrist:[.61,.61]}},
-  {t:.48,c:"wrists",p:L.shoulders},{t:.54,c:"shoulders",p:L.elbows},{t:.84,c:null,p:L.wrists},{t:1,c:null,p:L.end}]},
+  {t:.48,c:"wrists",p:L.slap},{t:.54,c:"shoulders",p:L.wrists},{t:.84,c:null,p:L.end},{t:1,c:null,p:L.end}]},
  {id:"standing",jp:"立って",dur:2.4,kf:[
   {t:0,c:null,p:{foot:[.575,.795],ankle:[.53,.79],knee:[.53,.63],hip:[.52,.47],lspine:[.52,.37],chest:[.52,.27],neck:[.52,.20],head:[.53,.14],elbow:[.52,.38],wrist:[.52,.485]}},
   {t:.16,c:null,p:{foot:[.575,.795],ankle:[.53,.79],knee:[.585,.665],hip:[.50,.615],lspine:[.49,.52],chest:[.485,.42],neck:[.485,.35],head:[.50,.295],elbow:[.525,.525],wrist:[.60,.585]}},
   {t:.34,c:"hips",p:{foot:[.585,.79],ankle:[.54,.785],knee:[.60,.665],hip:[.485,.775],lspine:[.455,.695],chest:[.455,.60],neck:[.465,.52],head:[.495,.485],elbow:[.495,.685],wrist:[.585,.71]}},
-  {t:.55,c:"wrists",p:L.shoulders},{t:.61,c:"shoulders",p:L.elbows},{t:.84,c:null,p:L.wrists},{t:1,c:null,p:L.end}]}
+  {t:.55,c:"wrists",p:L.slap},{t:.61,c:"shoulders",p:L.wrists},{t:.84,c:null,p:L.end},{t:1,c:null,p:L.end}]}
 ];
 const CJ={hips:"hip",wrists:"wrist",shoulders:"chest"};
 const CCOL={hips:"--hips",wrists:"--slap",shoulders:"--back"};
@@ -289,18 +290,19 @@ function initAudio(){
  for(let c=0;c<2;c++){const d=b.getChannelData(c); for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.2);} room.buffer=b;
  const rg=ctx.createGain(); rg.gain.value=.14; master.connect(comp); comp.connect(ctx.destination); room.connect(rg); rg.connect(comp);
 }
-const now=()=>ctx.currentTime;
+let AT=null; const now=()=>AT!==null?AT:ctx.currentTime;
+function schedule(modeId,lv,start){ const D=lv.dur; lv.kf.forEach(k=>{ if(k.c){ AT=start+k.t*D; try{SYN[modeId](k.c);}finally{AT=null;} } }); }
 function voice({type="sine",f0,f1,dur=.5,attack=.004,peak=.5,dest,glide=dur*.6}){
  const o=ctx.createOscillator(),g=ctx.createGain(); o.type=type; o.frequency.setValueAtTime(f0,now());
  if(f1&&f1!==f0)o.frequency.exponentialRampToValueAtTime(Math.max(1,f1),now()+glide);
  g.gain.setValueAtTime(.0001,now()); g.gain.exponentialRampToValueAtTime(peak,now()+attack); g.gain.exponentialRampToValueAtTime(.0001,now()+dur);
- o.connect(g); g.connect(dest||master); if(!dest)g.connect(room); o.start(); o.stop(now()+dur+.05); return o;
+ o.connect(g); g.connect(dest||master); if(!dest)g.connect(room); o.start(now()); o.stop(now()+dur+.05); return o;
 }
 function slapN({level=.5,cutoff=2200,dur=.12}){
  const n=Math.floor(ctx.sampleRate*dur),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0); for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
  const s=ctx.createBufferSource(); s.buffer=b; const bp=ctx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=cutoff; bp.Q.value=.8;
  const g=ctx.createGain(); g.gain.setValueAtTime(level,now()); g.gain.exponentialRampToValueAtTime(.0001,now()+dur);
- s.connect(bp); bp.connect(g); g.connect(master); g.connect(room); s.start(); s.stop(now()+dur+.02);
+ s.connect(bp); bp.connect(g); g.connect(master); g.connect(room); s.start(now()); s.stop(now()+dur+.02);
 }
 const SYN={
  discrete(part){ const f={hips:261.63,wrists:293.66,shoulders:329.63}[part];
@@ -330,12 +332,15 @@ function makeStage(modeId,stateRef,onPlayed){
  const updPlays=()=>{pc.textContent=stateRef.plays?(lang==="en"?`${stateRef.plays} ${tt("plays")}`:`${stateRef.plays}${tt("plays")}`):""; btn.textContent=stateRef.plays?tt("replay"):tt("play");};
  btn.onclick=()=>{
   initAudio(); cancelAnimationFrame(raf); flashes=[];
-  const lv=LEVELS[lvIdx],t0=performance.now(),D=lv.dur*1000,fired=new Set();
+  const lv=LEVELS[lvIdx],D=lv.dur;
+  const lat=(ctx.outputLatency||0)+(ctx.baseLatency||0);
+  const start=ctx.currentTime+0.15; schedule(modeId,lv,start);
+  const p0=performance.now()+150+lat*1000;
   stateRef.plays=(stateRef.plays||0)+1; (stateRef.levels=stateRef.levels||[]); if(!stateRef.levels.includes(lv.id))stateRef.levels.push(lv.id);
   updPlays(); onPlayed&&onPlayed();
-  const tick=()=>{ const u=(performance.now()-t0)/D;
-   lv.kf.forEach((k,i)=>{ if(k.c&&u>=k.t&&!fired.has(i)){fired.add(i); SYN[modeId](k.c); flashes.push({c:k.c,at:performance.now()});} });
-   draw(cv,lv,Math.min(u,1),flashes);
+  const tick=()=>{
+   const u= ctx.state==="running" ? (ctx.currentTime-lat-start)/D : (performance.now()-p0)/(D*1000);
+   draw(cv,lv,Math.max(0,Math.min(u,1)),flashes);
    if(u<1.35)raf=requestAnimationFrame(tick); };
   raf=requestAnimationFrame(tick);
  };
@@ -346,7 +351,7 @@ function makeStage(modeId,stateRef,onPlayed){
 }
 function quickPlay(modeId){ // ranking page: standing fall, sound only
  initAudio(); const lv=LEVELS[3],D=lv.dur*1000;
- lv.kf.forEach(k=>{ if(k.c)setTimeout(()=>SYN[modeId](k.c),k.t*D); });
+ schedule(modeId,lv,ctx.currentTime+0.1);
 }
 
 /* ================= STATE ================= */
