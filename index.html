@@ -113,7 +113,7 @@ footer{margin-top:40px;display:flex;justify-content:flex-end}
 (function(){
 "use strict";
 /* ====== PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE ====== */
-const VERSION="v3";
+const VERSION="v4";
 const SUBMIT_URL="https://script.google.com/macros/s/AKfycbwSvzw_RsCrdW5y6mKbUM4VdgPsucSB6AH7rRPYgxDt04VYJe3HkWV-c6R_e_CwgWmY/exec";
 
 /* ================= TEXT ================= */
@@ -123,7 +123,7 @@ const T={
   introEyebrow:"Listening study · about 5 minutes",
   introTitle:"How should a breakfall sound?",
   intro1:"You will watch an animated backward breakfall (ushiro ukemi) and hear three different ways of turning its body contacts into sound. After each one, you rate four short statements.",
-  introUse:"The animation shows the fall from the outside. In real use, the sound plays while you are the one falling, when you cannot see your own body.",
+  introUse:"The purpose of the sound is to tell the person falling whether the order and timing of their body contacts were correct. In real use, the sound plays while you are the one falling, when you cannot see your own body. The animation shows the fall from the outside and slower than real speed, so that each contact is easy to follow.",
   intro2:"Turn your phone's sound on (iPhone: switch off silent mode) and use headphones if you can. There are no right or wrong answers.",
   consent:"I am 18 or older, I have read the information about my data, and I agree to take part. I understand my answers are anonymous and that I can stop at any time before submitting.",
   dataTitle:"Information about your data (GDPR)",
@@ -150,7 +150,7 @@ const T={
   items:["The sound was easy to understand in relation to the movement.","The sound would help me tell whether the fall was done correctly.","The sound was pleasant.","I would use this in training."],
   lo:"1 · Strongly disagree", hi:"Strongly agree · 7",
   rankTitle:"Your ranking",
-  rankHelp:"Rank the three sounds from best (1) to worst (3). Tap a sound's name to hear it again.",
+  rankHelp:"Which sound would help you most to learn a correct breakfall? Rank them from most helpful (1) to least helpful (3). Tap Hear to listen again.",
   hear:"Hear",
   comments:"Comments (optional)", commentsPh:"Anything you noticed, liked or disliked",
   needConsent:"Please tick the consent box to continue.",
@@ -169,7 +169,7 @@ const T={
   introEyebrow:"聴取調査 · 約5分",
   introTitle:"受け身はどんな音であるべきか？",
   intro1:"後ろ受け身のアニメーションを見ながら、体が畳に触れる瞬間を音に変える3つの方法を聴いていただきます。それぞれの後に、4つの短い質問に答えてください。",
-  introUse:"アニメーションは受け身を外から見たものです。実際の使用では、自分の体が見えない状態で受け身をとっている最中に音が鳴ります。",
+  introUse:"音の目的は、受け身をとる人に、体が畳に触れる順番とタイミングが正しかったかどうかを伝えることです。実際の使用では、自分の体が見えない状態で受け身をとっている最中に音が鳴ります。アニメーションは受け身を外から、実際より遅い速度で示しており、各接触がわかりやすくなっています。",
   intro2:"端末の音をオンにしてください（iPhoneはサイレントモードを解除）。できればヘッドホンをご使用ください。正解・不正解はありません。",
   consent:"私は18歳以上であり、データに関する説明を読んだうえで、本研究への参加に同意します。回答は匿名であること、また送信前であればいつでも中止できることを理解しています。",
   dataTitle:"データの取り扱いについて（GDPR）",
@@ -196,7 +196,7 @@ const T={
   items:["動きとの関係で、音がわかりやすかった。","受け身が正しくできたかどうかを判断するのに、この音は役立つと思う。","音が心地よかった。","練習でこの音を使いたいと思う。"],
   lo:"1 · 全くそう思わない", hi:"非常にそう思う · 7",
   rankTitle:"順位づけ",
-  rankHelp:"3つのサウンドを、最も良い（1位）から最も悪い（3位）まで順位をつけてください。名前の横のボタンで、もう一度聴けます。",
+  rankHelp:"正しい受け身を身につけるのに、どのサウンドが最も役立つと思いますか？最も役立つ（1位）から最も役立たない（3位）まで順位をつけてください。「聴く」でもう一度聴けます。",
   hear:"聴く",
   comments:"ご意見・ご感想（任意）", commentsPh:"気づいたこと、良かった点、気になった点など",
   needConsent:"続けるには、同意欄にチェックを入れてください。",
