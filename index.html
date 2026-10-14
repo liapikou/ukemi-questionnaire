@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Ukemi Sound Questionnaire</title>
+<style>
+/* Layout: one centred column of steps; each sound gets a stage (mat + figure) above its rating block. Single dark look, matching the trainer app. */
+:root{
+  --bg:#0c121b; --panel:#141d2a; --line:#273447; --fg:#e9edf2; --muted:#93a1b3;
+  --tatami:#c9b37e; --tatami-dim:#6f6447; --hips:#e0875f; --slap:#7fc4d8; --back:#b9a1e6;
+  --ok:#8fcf9a; --warn:#e6a35c;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.5}
+body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:720px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.brand b{font-size:1.05rem;letter-spacing:.02em}
+.brand .jp{color:var(--tatami);font-size:1.3rem;font-weight:600}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.lang button{background:none;border:0;color:var(--muted);padding:6px 14px;font:inherit;font-size:.9rem;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--tatami);color:#1a160c;font-weight:600}
+.progress{display:flex;gap:6px;margin-bottom:18px}
+.progress i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.progress i.on{background:var(--tatami)}
+h1{font-size:1.6rem;line-height:1.25;margin:0 0 10px;text-wrap:balance}
+h2{font-size:1.25rem;margin:0 0 6px;text-wrap:balance}
+p{margin:0 0 12px;max-width:62ch}
+.muted{color:var(--muted)}
+.eyebrow{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--tatami);margin-bottom:6px}
+section.step{display:grid;gap:18px}
+.field{display:grid;gap:6px}
+.field label,.field .lbl{font-weight:600}
+select,input[type=number],textarea{background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit;width:100%}
+textarea{min-height:110px;resize:vertical}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.gdpr{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.gdpr summary{cursor:pointer;font-weight:600;color:var(--tatami)}
+.gdpr dl{margin:12px 0 0;display:grid;gap:10px}
+.gdpr dt{font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.gdpr dd{margin:2px 0 0;max-width:62ch;overflow-wrap:anywhere}
+.pid{font-family:var(--mono);font-size:1.3rem;color:var(--tatami);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 16px;user-select:all}
+.consent{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.consent input{width:22px;height:22px;margin-top:2px;accent-color:var(--tatami);flex:none}
+.btns{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:6px}
+.btn{background:var(--tatami);color:#1a160c;border:0;border-radius:10px;padding:12px 22px;font:inherit;font-weight:700;cursor:pointer;min-height:46px}
+.btn.ghost{background:none;color:var(--fg);border:1px solid var(--line);font-weight:500}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--tatami);outline-offset:2px}
+.err{color:var(--warn);font-size:.92rem;min-height:1.4em}
+
+/* stage */
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stage canvas{display:block;width:100%;height:auto;aspect-ratio:16/10;max-width:100%}
+.stagebar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-top:1px solid var(--line)}
+.levels{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 11px;font:inherit;font-size:.82rem;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--tatami);color:var(--fg);background:rgba(201,179,126,.12)}
+.chip .n{font-family:var(--mono);color:var(--tatami);margin-right:4px}
+.play{display:flex;gap:8px;align-items:center}
+.plays{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);padding:0 12px 10px}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:var(--c)}
+
+/* likert */
+.items{display:grid;gap:14px}
+.item{display:grid;gap:8px}
+.item .q{font-weight:600}
+.scale{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.scale button{background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:8px;min-height:44px;font:inherit;font-family:var(--mono);cursor:pointer}
+.scale button[aria-pressed="true"]{background:var(--tatami);border-color:var(--tatami);color:#1a160c;font-weight:700}
+.anchors{display:flex;justify-content:space-between;gap:12px;font-size:.78rem;color:var(--muted)}
+
+/* ranking */
+.rank{display:grid;gap:10px}
+.rankrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+.rankrow .nm{font-weight:700;font-size:1.05rem;display:flex;gap:10px;align-items:center}
+.pos{display:flex;gap:6px}
+.pos button{width:46px;height:44px;border-radius:8px;border:1px solid var(--line);background:none;color:var(--fg);font:inherit;font-family:var(--mono);cursor:pointer}
+.pos button[aria-pressed="true"]{background:var(--tatami);color:#1a160c;border-color:var(--tatami);font-weight:700}
+.mini{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:4px 10px;font:inherit;font-size:.8rem;cursor:pointer}
+
+/* researcher */
+footer{margin-top:40px;display:flex;justify-content:flex-end}
+.linkbtn{background:none;border:0;color:var(--muted);font:inherit;font-size:.8rem;text-decoration:underline;cursor:pointer}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px}
+.panel .count{font-family:var(--mono);font-size:1.6rem;color:var(--tatami)}
+.done{text-align:center;padding-block:40px;display:grid;gap:10px;justify-items:center}
+.done .mark{font-size:2.6rem;color:var(--ok)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="jp">受け身</span><b data-t="brand"></b></div>
+    <div class="lang" role="group" aria-label="Language">
+      <button id="lang-en" type="button" aria-pressed="true">English</button>
+      <button id="lang-ja" type="button" aria-pressed="false">日本語</button>
+    </div>
+  </header>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+  <main id="app"></main>
+  <footer><button class="linkbtn" id="researcher" type="button" hidden>Researcher</button></footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ====== PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE ====== */
+const SUBMIT_URL="PASTE_APPS_SCRIPT_URL_HERE";
+
+/* ================= TEXT ================= */
+const T={
+ en:{
+  brand:"Ukemi Sound Trainer",
+  introEyebrow:"Listening study · about 5 minutes",
+  introTitle:"How should a breakfall sound?",
+  intro1:"You will watch an animated backward breakfall (ushiro ukemi) and hear three different ways of turning its body contacts into sound. After each one, you rate four short statements.",
+  intro2:"Turn your phone's sound on (iPhone: switch off silent mode) and use headphones if you can. There are no right or wrong answers.",
+  consent:"I am 18 or older, I have read the information about my data, and I agree to take part. I understand my answers are anonymous and that I can stop at any time before submitting.",
+  dataTitle:"Information about your data (GDPR)",
+  data:[
+   ["Who","Researcher: Eirini Liapikou, Ukemi Sound Trainer project. Contact: iriniliapikou@gmail.com"],
+   ["Purpose","To evaluate three ways of giving sound feedback for judo breakfall training. Results will be published in a conference paper and a Master's thesis, only as group statistics."],
+   ["What is collected","Belt, years of judo, musical training, age group, your ratings and ranking, optional comments, the language you chose and the time taken. No name, email or other contact details are asked for."],
+   ["Legal basis","Your consent (GDPR Article 6(1)(a)). Taking part is voluntary."],
+   ["Storage","Answers are stored in a Google Sheet in the researcher's Google account (Google acts as data processor and may log technical data such as IP address). They are kept until the research is finished and no longer than 5 years, then deleted."],
+   ["Your rights","Because no names are collected, your answers cannot be linked to you. After submitting you will see a participant code: send it to the contact address if you want your answers deleted. Please do not write personal details in the comments. You can complain to your national data protection authority (in Denmark: Datatilsynet)."]
+  ],
+  start:"Start", next:"Next", back:"Back", submit:"Submit",
+  profileTitle:"About you",
+  belt:"Belt / grade", beltOpts:["No judo experience","White belt","Coloured belt (kyu)","Brown belt","Black belt (dan)"],
+  years:"Years of judo practice",
+  music:"Formal musical training", musicOpts:["None","Less than 2 years","2–5 years","More than 5 years"],
+  age:"Age group", ageOpts:["18–29","30–44","45–59","60–74","75 or older","Prefer not to say"],
+  choose:"Choose…",
+  sound:"Sound", of:"of",
+  soundHelp:"Press Play to watch the fall and hear the sound. Play it at least once, replay as often as you like. You can also try the other training levels.",
+  play:"Play", replay:"Replay", plays:"plays",
+  levels:["Supine slap","Seated roll","Squat drop","Standing fall"],
+  hips:"Hips", slap:"Arms (slap)", backC:"Back",
+  items:["The sound was easy to understand in relation to the movement.","The sound would help me tell whether the fall was done correctly.","The sound was pleasant.","I would use this in training."],
+  lo:"1 · Strongly disagree", hi:"Strongly agree · 7",
+  rankTitle:"Your ranking",
+  rankHelp:"Rank the three sounds from best (1) to worst (3). Tap a sound's name to hear it again.",
+  hear:"Hear",
+  comments:"Comments (optional)", commentsPh:"Anything you noticed, liked or disliked",
+  needConsent:"Please tick the consent box to continue.",
+  needProfile:"Please answer all questions about you.",
+  needPlay:"Please play the sound at least once.",
+  needItems:"Please answer all four statements.",
+  needRank:"Please give each sound a different rank.",
+  doneTitle:"Thank you!",
+  done1:"Your answers have been sent. You can close this page.",
+  pidNote:"Your participant code (keep it if you may want your answers deleted later):",
+  sending:"Sending…",
+  sendFail:"Could not send. Check your internet connection and tap Submit again."
+ },
+ ja:{
+  brand:"受け身サウンドトレーナー",
+  introEyebrow:"聴取調査 · 約5分",
+  introTitle:"受け身はどんな音であるべきか？",
+  intro1:"後ろ受け身のアニメーションを見ながら、体が畳に触れる瞬間を音に変える3つの方法を聴いていただきます。それぞれの後に、4つの短い質問に答えてください。",
+  intro2:"端末の音をオンにしてください（iPhoneはサイレントモードを解除）。できればヘッドホンをご使用ください。正解・不正解はありません。",
+  consent:"私は18歳以上であり、データに関する説明を読んだうえで、本研究への参加に同意します。回答は匿名であること、また送信前であればいつでも中止できることを理解しています。",
+  dataTitle:"データの取り扱いについて（GDPR）",
+  data:[
+   ["実施者","研究者：Eirini Liapikou（Ukemi Sound Trainer プロジェクト）　連絡先：iriniliapikou@gmail.com"],
+   ["目的","柔道の受け身練習において、音によるフィードバックの3つの方法を評価するためです。結果は学会論文および修士論文で、集団の統計としてのみ公表されます。"],
+   ["収集する情報","帯・段級、柔道歴、音楽教育の経験、年齢層、評価と順位、任意のコメント、選択した言語、所要時間。氏名、メールアドレスなどの連絡先は収集しません。"],
+   ["法的根拠","ご本人の同意（GDPR第6条1項(a)）。参加は任意です。"],
+   ["保存","回答は研究者のGoogleアカウント内のGoogleスプレッドシートに保存されます（Googleはデータ処理者として、IPアドレスなどの技術的情報を記録する場合があります）。研究終了まで、最長5年間保管した後に削除します。"],
+   ["あなたの権利","氏名を収集しないため、回答をあなた個人と結びつけることはできません。送信後に参加者コードが表示されます。回答の削除を希望する場合は、そのコードを連絡先までお送りください。コメント欄には個人情報を書かないでください。各国のデータ保護当局（デンマークではDatatilsynet）に苦情を申し立てることもできます。"]
+  ],
+  start:"開始", next:"次へ", back:"戻る", submit:"送信",
+  profileTitle:"あなたについて",
+  belt:"帯・段級", beltOpts:["柔道経験なし","白帯","色帯（級）","茶帯","黒帯（段）"],
+  years:"柔道歴（年）",
+  music:"音楽教育の経験", musicOpts:["なし","2年未満","2〜5年","5年以上"],
+  age:"年齢層", ageOpts:["18〜29歳","30〜44歳","45〜59歳","60〜74歳","75歳以上","回答しない"],
+  choose:"選択してください",
+  sound:"サウンド", of:"/",
+  soundHelp:"「再生」を押して、受け身の動きを見ながら音を聴いてください。少なくとも1回は再生してください。何度再生しても構いません。他の練習レベルも試せます。",
+  play:"再生", replay:"もう一度", plays:"回再生",
+  levels:["寝ながら","長座","しゃがんで","立って"],
+  hips:"腰", slap:"腕（叩き）", backC:"背中",
+  items:["動きとの関係で、音がわかりやすかった。","受け身が正しくできたかどうかを判断するのに、この音は役立つと思う。","音が心地よかった。","練習でこの音を使いたいと思う。"],
+  lo:"1 · 全くそう思わない", hi:"非常にそう思う · 7",
+  rankTitle:"順位づけ",
+  rankHelp:"3つのサウンドを、最も良い（1位）から最も悪い（3位）まで順位をつけてください。名前の横のボタンで、もう一度聴けます。",
+  hear:"聴く",
+  comments:"ご意見・ご感想（任意）", commentsPh:"気づいたこと、良かった点、気になった点など",
+  needConsent:"続けるには、同意欄にチェックを入れてください。",
+  needProfile:"すべての項目に回答してください。",
+  needPlay:"少なくとも1回は再生してください。",
+  needItems:"4つの質問すべてに回答してください。",
+  needRank:"それぞれのサウンドに異なる順位をつけてください。",
+  doneTitle:"ご協力ありがとうございました！",
+  done1:"回答は送信されました。このページを閉じて構いません。",
+  pidNote:"参加者コード（後で回答の削除を希望する場合に備えて控えてください）：",
+  sending:"送信中…",
+  sendFail:"送信できませんでした。インターネット接続を確認して、もう一度「送信」を押してください。"
+ }
+};
+let lang="en";
+const tt=k=>T[lang][k];
+
+/* ================= FIGURE (from the trainer app) ================= */
+const FLOOR=0.80;
+const smooth=x=>x*x*(3-2*x);
+const L={
+ shoulders:{foot:[.70,.615],ankle:[.645,.615],knee:[.58,.57],hip:[.49,.782],lspine:[.45,.775],chest:[.415,.765],neck:[.37,.74],head:[.325,.70],elbow:[.485,.758],wrist:[.575,.72]},
+ elbows:{foot:[.705,.665],ankle:[.648,.66],knee:[.582,.59],hip:[.49,.783],lspine:[.445,.777],chest:[.405,.772],neck:[.365,.752],head:[.318,.708],elbow:[.48,.79],wrist:[.575,.77]},
+ wrists:{foot:[.71,.705],ankle:[.65,.70],knee:[.585,.61],hip:[.49,.783],lspine:[.44,.778],chest:[.40,.775],neck:[.36,.755],head:[.315,.715],elbow:[.475,.80],wrist:[.585,.808]},
+ end:{foot:[.71,.71],ankle:[.65,.71],knee:[.585,.62],hip:[.49,.784],lspine:[.44,.779],chest:[.40,.776],neck:[.36,.756],head:[.315,.716],elbow:[.475,.802],wrist:[.585,.808]}
+};
+const SUPINE={foot:[.70,.70],ankle:[.64,.71],knee:[.58,.60],hip:[.50,.785],lspine:[.44,.775],chest:[.40,.775],neck:[.36,.755],head:[.315,.715]};
+const sup=(e,w)=>Object.assign({},SUPINE,{elbow:e,wrist:w});
+const LEVELS=[
+ {id:"supine",jp:"寝ながら",dur:3.0,kf:[
+  {t:0,c:null,p:sup([.47,.79],[.55,.78])},{t:.34,c:null,p:sup([.45,.69],[.50,.615])},
+  {t:.60,c:null,p:sup([.475,.785],[.545,.735])},{t:.80,c:"wrists",p:sup([.475,.80],[.585,.808])},
+  {t:1,c:null,p:sup([.475,.802],[.585,.808])}]},
+ {id:"seated",jp:"長座",dur:2.8,kf:[
+  {t:0,c:null,p:{foot:[.80,.745],ankle:[.73,.745],knee:[.62,.73],hip:[.47,.775],lspine:[.45,.665],chest:[.44,.55],neck:[.45,.47],head:[.47,.435],elbow:[.53,.60],wrist:[.615,.55]}},
+  {t:.14,c:null,p:{foot:[.79,.725],ankle:[.72,.725],knee:[.61,.70],hip:[.475,.783],lspine:[.45,.71],chest:[.445,.61],neck:[.45,.525],head:[.475,.49],elbow:[.53,.645],wrist:[.605,.595]}},
+  {t:.42,c:"wrists",p:L.shoulders},{t:.48,c:"shoulders",p:L.elbows},{t:.84,c:null,p:L.wrists},{t:1,c:null,p:L.end}]},
+ {id:"squat",jp:"しゃがんで",dur:2.6,kf:[
+  {t:0,c:null,p:{foot:[.61,.795],ankle:[.565,.79],knee:[.61,.65],hip:[.50,.59],lspine:[.49,.50],chest:[.485,.41],neck:[.485,.345],head:[.505,.31],elbow:[.56,.47],wrist:[.635,.475]}},
+  {t:.22,c:"hips",p:{foot:[.60,.785],ankle:[.55,.78],knee:[.60,.665],hip:[.485,.775],lspine:[.455,.695],chest:[.455,.60],neck:[.465,.52],head:[.495,.485],elbow:[.535,.64],wrist:[.61,.61]}},
+  {t:.48,c:"wrists",p:L.shoulders},{t:.54,c:"shoulders",p:L.elbows},{t:.84,c:null,p:L.wrists},{t:1,c:null,p:L.end}]},
+ {id:"standing",jp:"立って",dur:2.4,kf:[
+  {t:0,c:null,p:{foot:[.575,.795],ankle:[.53,.79],knee:[.53,.63],hip:[.52,.47],lspine:[.52,.37],chest:[.52,.27],neck:[.52,.20],head:[.53,.14],elbow:[.52,.38],wrist:[.52,.485]}},
+  {t:.16,c:null,p:{foot:[.575,.795],ankle:[.53,.79],knee:[.585,.665],hip:[.50,.615],lspine:[.49,.52],chest:[.485,.42],neck:[.485,.35],head:[.50,.295],elbow:[.525,.525],wrist:[.60,.585]}},
+  {t:.34,c:"hips",p:{foot:[.585,.79],ankle:[.54,.785],knee:[.60,.665],hip:[.485,.775],lspine:[.455,.695],chest:[.455,.60],neck:[.465,.52],head:[.495,.485],elbow:[.495,.685],wrist:[.585,.71]}},
+  {t:.55,c:"wrists",p:L.shoulders},{t:.61,c:"shoulders",p:L.elbows},{t:.84,c:null,p:L.wrists},{t:1,c:null,p:L.end}]}
+];
+const CJ={hips:"hip",wrists:"wrist",shoulders:"chest"};
+const CCOL={hips:"--hips",wrists:"--slap",shoulders:"--back"};
+function poseAt(lv,u){
+ const k=lv.kf; if(u<=0)return k[0].p; if(u>=1)return k[k.length-1].p;
+ let i=0; while(i<k.length-1&&k[i+1].t<u)i++;
+ const a=k[i],b=k[i+1],s=smooth((u-a.t)/(b.t-a.t)),o={};
+ for(const j in a.p)o[j]=[a.p[j][0]+(b.p[j][0]-a.p[j][0])*s,a.p[j][1]+(b.p[j][1]-a.p[j][1])*s];
+ return o;
+}
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function draw(cv,lv,u,flashes){
+ const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ const W=Math.max(10,Math.round(r.width*dpr)),H=Math.round(W*10/16);
+ if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+ const g=cv.getContext("2d"); g.clearRect(0,0,W,H);
+ const S=H*1.22, X=x=>(x-0.52)*S+W/2, Y=y=>H*0.86-(FLOOR-y)*S;
+ // tatami
+ const fy=Y(FLOOR);
+ g.fillStyle=css("--tatami-dim"); g.globalAlpha=.35; g.fillRect(0,fy,W,H-fy); g.globalAlpha=1;
+ g.strokeStyle=css("--tatami"); g.lineWidth=2*dpr; g.beginPath(); g.moveTo(0,fy); g.lineTo(W,fy); g.stroke();
+ g.globalAlpha=.25; g.lineWidth=1*dpr; for(let x=W*0.12;x<W;x+=W*0.25){g.beginPath();g.moveTo(x,fy);g.lineTo(x,H);g.stroke();} g.globalAlpha=1;
+ const p=poseAt(lv,u), P=j=>[X(p[j][0]),Y(p[j][1])];
+ // flashes under figure
+ const now=performance.now();
+ flashes.forEach(f=>{const age=(now-f.at)/600; if(age>1)return; const [x,y]=P(CJ[f.c]);
+  g.fillStyle=css(CCOL[f.c]); g.globalAlpha=(1-age)*.55; g.beginPath(); g.arc(x,y,(10+26*age)*dpr,0,7); g.fill(); g.globalAlpha=1;});
+ g.lineCap="round"; g.lineJoin="round"; g.strokeStyle=css("--fg"); g.lineWidth=5*dpr;
+ const line=js=>{g.beginPath(); js.forEach((j,i)=>{const [x,y]=P(j); i?g.lineTo(x,y):g.moveTo(x,y);}); g.stroke();};
+ line(["foot","ankle","knee","hip"]);
+ // rounded spine
+ g.beginPath(); let [x0,y0]=P("hip"); g.moveTo(x0,y0); const [lx,ly]=P("lspine"),[cx,cy]=P("chest"); g.quadraticCurveTo(lx,ly,cx,cy); const [nx,ny]=P("neck"); g.lineTo(nx,ny); g.stroke();
+ g.lineWidth=4*dpr; line(["chest","elbow","wrist"]);
+ const [hx,hy]=P("head"); g.fillStyle=css("--fg"); g.beginPath(); g.arc(hx,hy,0.028*S,0,7); g.fill();
+}
+
+/* ================= AUDIO (from the trainer app) ================= */
+let ctx,master,room;
+function initAudio(){
+ try{ if(navigator.audioSession) navigator.audioSession.type="playback"; }catch(e){}
+ if(ctx){ if(ctx.state==="suspended")ctx.resume(); return; }
+ ctx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:"interactive"});
+ master=ctx.createGain(); master.gain.value=.9;
+ const comp=ctx.createDynamicsCompressor(); comp.threshold.value=-14; comp.ratio.value=3; comp.attack.value=.003; comp.release.value=.25;
+ room=ctx.createConvolver(); const n=ctx.sampleRate*1.1,b=ctx.createBuffer(2,n,ctx.sampleRate);
+ for(let c=0;c<2;c++){const d=b.getChannelData(c); for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2.2);} room.buffer=b;
+ const rg=ctx.createGain(); rg.gain.value=.14; master.connect(comp); comp.connect(ctx.destination); room.connect(rg); rg.connect(comp);
+}
+const now=()=>ctx.currentTime;
+function voice({type="sine",f0,f1,dur=.5,attack=.004,peak=.5,dest,glide=dur*.6}){
+ const o=ctx.createOscillator(),g=ctx.createGain(); o.type=type; o.frequency.setValueAtTime(f0,now());
+ if(f1&&f1!==f0)o.frequency.exponentialRampToValueAtTime(Math.max(1,f1),now()+glide);
+ g.gain.setValueAtTime(.0001,now()); g.gain.exponentialRampToValueAtTime(peak,now()+attack); g.gain.exponentialRampToValueAtTime(.0001,now()+dur);
+ o.connect(g); g.connect(dest||master); if(!dest)g.connect(room); o.start(); o.stop(now()+dur+.05); return o;
+}
+function slapN({level=.5,cutoff=2200,dur=.12}){
+ const n=Math.floor(ctx.sampleRate*dur),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0); for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+ const s=ctx.createBufferSource(); s.buffer=b; const bp=ctx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=cutoff; bp.Q.value=.8;
+ const g=ctx.createGain(); g.gain.setValueAtTime(level,now()); g.gain.exponentialRampToValueAtTime(.0001,now()+dur);
+ s.connect(bp); bp.connect(g); g.connect(master); g.connect(room); s.start(); s.stop(now()+dur+.02);
+}
+const SYN={
+ discrete(part){ const f={hips:261.63,wrists:293.66,shoulders:329.63}[part];
+  const lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=3200; lp.connect(master); lp.connect(room);
+  [[1,.34,"triangle"],[2,.12,"sine"],[3,.05,"sine"]].forEach(([h,a,ty])=>{const o=voice({type:ty,f0:f*h,dur:.95,attack:.003,peak:a,dest:lp}); o.detune.value=Math.random()*8-4;}); },
+ sweep(part){ const [a,b]={hips:[120,220],wrists:[220,380],shoulders:[380,560]}[part];
+  const lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=Math.min(7000,b*4); lp.connect(master); lp.connect(room);
+  voice({type:"sawtooth",f0:a,f1:b,dur:.32,glide:.18,attack:.006,peak:.34,dest:lp});
+  voice({type:"sine",f0:a,f1:b,dur:.3,glide:.18,attack:.006,peak:.18,dest:lp}); },
+ timbral(part){
+  if(part==="hips"){voice({f0:110,f1:55,dur:.34,glide:.22,peak:.55}); slapN({level:.12,cutoff:160,dur:.08});}
+  else if(part==="shoulders"){voice({f0:440,f1:220,dur:.24,glide:.16,peak:.4}); slapN({level:.1,cutoff:500,dur:.07});}
+  else {[880,1320,1760].forEach((f,i)=>voice({f0:f*(1+i*.002),dur:.6-i*.08,peak:.22-i*.04})); slapN({level:.18,cutoff:3200,dur:.04});} }
+};
+
+/* ================= PLAYER ================= */
+function makeStage(modeId,stateRef,onPlayed){
+ const el=document.createElement("div"); el.className="stage";
+ el.innerHTML=`<canvas aria-label="Animated backward breakfall"></canvas>
+  <div class="legend"><span style="--c:var(--hips)">${tt("hips")}</span><span style="--c:var(--slap)">${tt("slap")}</span><span style="--c:var(--back)">${tt("backC")}</span></div>
+  <div class="stagebar"><div class="levels" role="group"></div>
+   <div class="play"><span class="plays"></span><button class="btn" type="button">${tt("play")}</button></div></div>`;
+ const cv=el.querySelector("canvas"),lvBox=el.querySelector(".levels"),btn=el.querySelector(".btn"),pc=el.querySelector(".plays");
+ let lvIdx=stateRef.level??3,raf=0,flashes=[];
+ const renderLv=()=>{ lvBox.innerHTML=""; LEVELS.forEach((lv,i)=>{const b=document.createElement("button"); b.type="button"; b.className="chip";
+   b.setAttribute("aria-pressed",String(i===lvIdx)); b.innerHTML=`<span class="n">${i+1}</span>${tt("levels")[i]}${lang==="en"?" · "+lv.jp:""}`;
+   b.onclick=()=>{lvIdx=i; stateRef.level=i; renderLv(); cancelAnimationFrame(raf); flashes=[]; draw(cv,LEVELS[i],0,flashes);}; lvBox.appendChild(b);}); };
+ const updPlays=()=>{pc.textContent=stateRef.plays?(lang==="en"?`${stateRef.plays} ${tt("plays")}`:`${stateRef.plays}${tt("plays")}`):""; btn.textContent=stateRef.plays?tt("replay"):tt("play");};
+ btn.onclick=()=>{
+  initAudio(); cancelAnimationFrame(raf); flashes=[];
+  const lv=LEVELS[lvIdx],t0=performance.now(),D=lv.dur*1000,fired=new Set();
+  stateRef.plays=(stateRef.plays||0)+1; (stateRef.levels=stateRef.levels||[]); if(!stateRef.levels.includes(lv.id))stateRef.levels.push(lv.id);
+  updPlays(); onPlayed&&onPlayed();
+  const tick=()=>{ const u=(performance.now()-t0)/D;
+   lv.kf.forEach((k,i)=>{ if(k.c&&u>=k.t&&!fired.has(i)){fired.add(i); SYN[modeId](k.c); flashes.push({c:k.c,at:performance.now()});} });
+   draw(cv,lv,Math.min(u,1),flashes);
+   if(u<1.35)raf=requestAnimationFrame(tick); };
+  raf=requestAnimationFrame(tick);
+ };
+ renderLv(); updPlays();
+ requestAnimationFrame(()=>draw(cv,LEVELS[lvIdx],0,flashes));
+ new ResizeObserver(()=>draw(cv,LEVELS[lvIdx],0,[])).observe(cv);
+ return el;
+}
+function quickPlay(modeId){ // ranking page: standing fall, sound only
+ initAudio(); const lv=LEVELS[3],D=lv.dur*1000;
+ lv.kf.forEach(k=>{ if(k.c)setTimeout(()=>SYN[modeId](k.c),k.t*D); });
+}
+
+/* ================= STATE ================= */
+const MODES=["discrete","sweep","timbral"], LET=["A","B","C"];
+const KEY="ukemiQ.responses.v1";
+const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){return [];}};
+const save=a=>{try{localStorage.setItem(KEY,JSON.stringify(a)); return true;}catch(e){return false;}};
+let S;
+function fresh(){
+ const o=MODES.slice(); for(let i=o.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [o[i],o[j]]=[o[j],o[i]];}
+ S={step:0,consent:false,profile:{belt:"",years:"",music:"",age:""},order:o,
+    r:Object.fromEntries(MODES.map(m=>[m,{q:[0,0,0,0],plays:0,levels:[],level:3}])),
+    rank:{},comments:"",started:Date.now(),orderSource:"random"};
+ fetchBalancedOrder();
+}
+/* Counterbalancing: the sheet returns the least-used of the 6 possible orders among completed responses. Falls back to random. */
+async function fetchBalancedOrder(){
+ if(!/^https:/.test(SUBMIT_URL))return;
+ const mine=S, ctl=new AbortController(), to=setTimeout(()=>ctl.abort(),5000);
+ try{ const r=await fetch(SUBMIT_URL+"?action=order",{signal:ctl.signal}); const j=await r.json();
+  const o=(j.order||"").split(">");
+  if(S===mine && S.step<2 && o.length===3 && MODES.every(m=>o.includes(m))){ S.order=o; S.orderSource="balanced"; }
+ }catch(e){} finally{ clearTimeout(to); }
+}
+fresh();
+const STEPS=()=>2+3+1;
+
+/* ================= RENDER ================= */
+const app=document.getElementById("app");
+const h=(html)=>{const d=document.createElement("div"); d.innerHTML=html.trim(); return d.firstChild;};
+function progress(){
+ const p=document.getElementById("progress"); p.innerHTML="";
+ for(let i=0;i<STEPS();i++){const e=document.createElement("i"); if(i<=S.step)e.className="on"; p.appendChild(e);}
+}
+function render(){
+ document.documentElement.lang=lang;
+ document.querySelectorAll("[data-t]").forEach(e=>e.textContent=tt(e.dataset.t));
+ progress(); app.innerHTML="";
+ const st=S.step;
+ if(st===0)return vIntro(); if(st===1)return vProfile(); if(st>=2&&st<=4)return vSound(st-2); if(st===5)return vRank(); if(st===6)return vDone(); if(st===99)return vResearcher();
+}
+function nav(backFn,nextLabel,nextFn){
+ const w=h(`<div><div class="err" role="alert"></div><div class="btns"></div></div>`),b=w.querySelector(".btns");
+ if(backFn){const x=h(`<button class="btn ghost" type="button">${tt("back")}</button>`); x.onclick=backFn; b.appendChild(x);} else b.appendChild(document.createElement("span"));
+ const n=h(`<button class="btn" type="button">${nextLabel}</button>`); n.onclick=()=>{const e=nextFn(); if(e)w.querySelector(".err").textContent=e;}; b.appendChild(n);
+ return w;
+}
+function go(s){S.step=s; render(); window.scrollTo({top:0});}
+
+function vIntro(){
+ const s=h(`<section class="step"><div><div class="eyebrow">${tt("introEyebrow")}</div><h1>${tt("introTitle")}</h1>
+  <p>${tt("intro1")}</p><p class="muted">${tt("intro2")}</p></div>
+  <details class="gdpr"><summary>${tt("dataTitle")}</summary><dl>${tt("data").map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl></details>
+  <label class="consent"><input type="checkbox" id="consent"><span>${tt("consent")}</span></label></section>`);
+ const cb=s.querySelector("#consent"); cb.checked=S.consent; cb.onchange=()=>S.consent=cb.checked;
+ s.appendChild(nav(null,tt("start"),()=>{ if(!S.consent)return tt("needConsent"); go(1); }));
+ app.appendChild(s);
+}
+function sel(id,label,opts,val){
+ return `<div class="field"><label for="${id}">${label}</label><select id="${id}"><option value="">${tt("choose")}</option>
+  ${opts.map((o,i)=>`<option value="${i}"${String(val)===String(i)?" selected":""}>${o}</option>`).join("")}</select></div>`;
+}
+const BELT_IDS=["none","white","kyu","brown","dan"],MUS_IDS=["none","lt2","2to5","gt5"],AGE_IDS=["18-29","30-44","45-59","60-74","75+","na"];
+function vProfile(){
+ const P=S.profile;
+ const s=h(`<section class="step"><h2>${tt("profileTitle")}</h2><div class="grid2">
+  ${sel("belt",tt("belt"),tt("beltOpts"),P.belt)}
+  <div class="field"><label for="years">${tt("years")}</label><input id="years" type="number" min="0" max="80" step="0.5" inputmode="decimal" value="${P.years}"></div>
+  ${sel("music",tt("music"),tt("musicOpts"),P.music)}
+  ${sel("age",tt("age"),tt("ageOpts"),P.age)}</div></section>`);
+ ["belt","music","age"].forEach(k=>s.querySelector("#"+k).onchange=e=>P[k]=e.target.value);
+ const y=s.querySelector("#years"); y.oninput=()=>P.years=y.value;
+ if(P.belt==="0"&&P.years==="")P.years="0";
+ s.appendChild(nav(()=>go(0),tt("next"),()=>{ if(P.belt===""||P.years===""||P.music===""||P.age==="")return tt("needProfile"); go(2); }));
+ app.appendChild(s);
+}
+function vSound(i){
+ const m=S.order[i],R=S.r[m];
+ const s=h(`<section class="step"><div><div class="eyebrow">${tt("sound")} ${i+1} ${tt("of")} 3</div><h2>${tt("sound")} ${LET[i]}</h2><p class="muted">${tt("soundHelp")}</p></div></section>`);
+ s.appendChild(makeStage(m,R));
+ const items=h(`<div class="items"></div>`);
+ tt("items").forEach((q,qi)=>{
+  const it=h(`<div class="item" role="group" aria-label="${q}"><div class="q">${qi+1}. ${q}</div><div class="scale"></div><div class="anchors"><span>${tt("lo")}</span><span>${tt("hi")}</span></div></div>`);
+  const sc=it.querySelector(".scale");
+  for(let v=1;v<=7;v++){const b=h(`<button type="button" aria-pressed="${R.q[qi]===v}">${v}</button>`);
+   b.onclick=()=>{R.q[qi]=v; sc.querySelectorAll("button").forEach((x,xi)=>x.setAttribute("aria-pressed",String(xi+1===v)));}; sc.appendChild(b);}
+  items.appendChild(it);
+ });
+ s.appendChild(items);
+ s.appendChild(nav(()=>go(i+1),tt("next"),()=>{ if(!R.plays)return tt("needPlay"); if(R.q.some(v=>!v))return tt("needItems"); go(i+3); }));
+ app.appendChild(s);
+}
+function vRank(){
+ const s=h(`<section class="step"><div><h2>${tt("rankTitle")}</h2><p class="muted">${tt("rankHelp")}</p></div><div class="rank"></div>
+  <div class="field"><label for="comments">${tt("comments")}</label><textarea id="comments" placeholder="${tt("commentsPh")}"></textarea></div></section>`);
+ const box=s.querySelector(".rank");
+ const draw=()=>{ box.innerHTML="";
+  S.order.forEach((m,i)=>{
+   const row=h(`<div class="rankrow"><div class="nm">${tt("sound")} ${LET[i]} <button class="mini" type="button">▶ ${tt("hear")}</button></div><div class="pos" role="group"></div></div>`);
+   row.querySelector(".mini").onclick=()=>quickPlay(m);
+   const pos=row.querySelector(".pos");
+   [1,2,3].forEach(r=>{const b=h(`<button type="button" aria-pressed="${S.rank[m]===r}" aria-label="${tt("sound")} ${LET[i]} – ${r}">${r}</button>`);
+    b.onclick=()=>{ const other=MODES.find(x=>x!==m&&S.rank[x]===r); if(other){ if(S.rank[m])S.rank[other]=S.rank[m]; else delete S.rank[other]; } S.rank[m]=r; draw(); };
+    pos.appendChild(b);});
+   box.appendChild(row);
+  }); };
+ draw();
+ const ta=s.querySelector("#comments"); ta.value=S.comments; ta.oninput=()=>S.comments=ta.value;
+ s.appendChild(nav(()=>go(4),tt("submit"),()=>{
+  const rs=MODES.map(m=>S.rank[m]); if(rs.some(x=>!x)||new Set(rs).size!==3)return tt("needRank");
+  if(S.sending)return;
+  if(!S.rec)S.rec=record();
+  const all=load(); if(!all.some(r=>r.pid===S.rec.pid)){all.push(S.rec); save(all);}
+  S.sending=true; const btn=s.querySelector(".btns .btn:last-child"); btn.disabled=true; btn.textContent=tt("sending");
+  const err=s.querySelector(".err"); err.textContent="";
+  send(S.rec).then(ok=>{ S.sending=false; btn.disabled=false; btn.textContent=tt("submit");
+   if(ok){markSent(S.rec.pid); go(6);} else err.textContent=tt("sendFail"); });
+ }));
+ app.appendChild(s);
+}
+function record(){
+ const P=S.profile, rec={pid:"P"+Date.now().toString(36).toUpperCase(),timestamp:new Date().toISOString(),lang,
+  belt:BELT_IDS[+P.belt],years:+P.years,music:MUS_IDS[+P.music],age:AGE_IDS[+P.age],
+  order:S.order.join(">"),order_source:S.orderSource,duration_s:Math.round((Date.now()-S.started)/1000),comments:S.comments.trim()};
+ MODES.forEach(m=>{const R=S.r[m]; rec[m+"_letter"]=LET[S.order.indexOf(m)]; rec[m+"_position"]=S.order.indexOf(m)+1;
+  R.q.forEach((v,i)=>rec[`${m}_q${i+1}`]=v); rec[m+"_plays"]=R.plays; rec[m+"_levels"]=R.levels.join("|"); rec[m+"_rank"]=S.rank[m];});
+ return rec;
+}
+/* ================= SENDING ================= */
+async function send(rec){
+ if(!/^https:/.test(SUBMIT_URL))return true; // not configured: kept on this device only
+ const body=JSON.stringify(rec);
+ try{ const r=await fetch(SUBMIT_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body});
+  if(r.ok){ try{ const j=await r.json(); return j.ok!==false; }catch(e){ return true; } } return false;
+ }catch(e){
+  try{ await fetch(SUBMIT_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body}); return true; }catch(e2){ return false; }
+ }
+}
+const SENT="ukemiQ.sent.v1";
+function markSent(pid){ try{ const a=JSON.parse(localStorage.getItem(SENT)||"[]"); a.push(pid); localStorage.setItem(SENT,JSON.stringify(a)); }catch(e){} }
+async function retryUnsent(){ // a submit that failed earlier on this phone
+ let sent=[]; try{ sent=JSON.parse(localStorage.getItem(SENT)||"[]"); }catch(e){}
+ for(const r of load()){ if(!sent.includes(r.pid) && await send(r)) markSent(r.pid); }
+}
+function vDone(){
+ const s=h(`<section class="step done"><div class="mark">✓</div><h1>${tt("doneTitle")}</h1><p>${tt("done1")}</p><p class="muted">${tt("pidNote")}</p><div class="pid">${S.rec?S.rec.pid:""}</div></section>`);
+ app.appendChild(s);
+}
+
+/* ================= RESEARCHER ================= */
+let prevStep=0;
+function toCSV(rows){
+ if(!rows.length)return "";
+ const cols=[...new Set(rows.flatMap(r=>Object.keys(r)))];
+ const esc=v=>{v=v==null?"":String(v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+ return [cols.join(","),...rows.map(r=>cols.map(c=>esc(r[c])).join(","))].join("\n");
+}
+function dl(name,text,type){
+ const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob(["﻿"+text],{type})); a.download=name;
+ document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href); a.remove();},500);
+}
+function vResearcher(){
+ const rows=load(), stamp=new Date().toISOString().slice(0,16).replace(/[:T]/g,"-");
+ const s=h(`<section class="step"><h2>Researcher</h2><div class="panel">
+  <div><div class="count">${rows.length}</div><div class="muted">responses saved in this browser</div></div>
+  <p class="muted">Responses are sent to your Google Sheet. This panel shows only what was submitted from this browser (backup for in-person sessions). Columns per sound: letter, position, q1–q4, plays, levels, rank. Mode IDs: discrete = Discrete Melodic, sweep = Continuous Sweep, timbral = Distinct Timbral.</p>
+  <div class="btns"><button class="btn" id="csv" type="button">Export CSV</button><button class="btn ghost" id="json" type="button">Export JSON</button></div>
+  <div class="btns"><button class="btn ghost" id="del" type="button">Delete all responses</button></div><div class="err" id="delmsg"></div>
+  </div><div class="btns"><button class="btn ghost" id="close" type="button">Back to questionnaire</button><span></span></div></section>`);
+ s.querySelector("#csv").onclick=()=>dl(`ukemi_responses_${stamp}.csv`,toCSV(rows),"text/csv");
+ s.querySelector("#json").onclick=()=>dl(`ukemi_responses_${stamp}.json`,JSON.stringify(rows,null,2),"application/json");
+ let armed=false; s.querySelector("#del").onclick=e=>{
+  if(!armed){armed=true; e.target.textContent="Tap again to delete "+rows.length+" responses"; s.querySelector("#delmsg").textContent="This cannot be undone. Export first."; return;}
+  save([]); render(); };
+ s.querySelector("#close").onclick=()=>go(prevStep);
+ app.appendChild(s);
+}
+document.getElementById("researcher").onclick=()=>{ if(S.step!==99)prevStep=S.step; go(99); };
+
+/* ================= LANGUAGE ================= */
+function setLang(l){lang=l; document.getElementById("lang-en").setAttribute("aria-pressed",String(l==="en")); document.getElementById("lang-ja").setAttribute("aria-pressed",String(l==="ja")); render();}
+document.getElementById("lang-en").onclick=()=>setLang("en");
+document.getElementById("lang-ja").onclick=()=>setLang("ja");
+if(location.hash==="#researcher")document.getElementById("researcher").hidden=false;
+render();
+if(/^https:/.test(SUBMIT_URL))retryUnsent();
+})();
+</script>
+</body>
+</html>
