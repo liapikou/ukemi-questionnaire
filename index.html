@@ -113,6 +113,7 @@ footer{margin-top:40px;display:flex;justify-content:flex-end}
 (function(){
 "use strict";
 /* ====== PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE ====== */
+const VERSION="v2";
 const SUBMIT_URL="https://script.google.com/macros/s/AKfycbwSvzw_RsCrdW5y6mKbUM4VdgPsucSB6AH7rRPYgxDt04VYJe3HkWV-c6R_e_CwgWmY/exec";
 
 /* ================= TEXT ================= */
@@ -122,6 +123,7 @@ const T={
   introEyebrow:"Listening study · about 5 minutes",
   introTitle:"How should a breakfall sound?",
   intro1:"You will watch an animated backward breakfall (ushiro ukemi) and hear three different ways of turning its body contacts into sound. After each one, you rate four short statements.",
+  introUse:"The animation shows the fall from the outside. In real use, the sound plays while you are the one falling, when you cannot see your own body.",
   intro2:"Turn your phone's sound on (iPhone: switch off silent mode) and use headphones if you can. There are no right or wrong answers.",
   consent:"I am 18 or older, I have read the information about my data, and I agree to take part. I understand my answers are anonymous and that I can stop at any time before submitting.",
   dataTitle:"Information about your data (GDPR)",
@@ -167,6 +169,7 @@ const T={
   introEyebrow:"聴取調査 · 約5分",
   introTitle:"受け身はどんな音であるべきか？",
   intro1:"後ろ受け身のアニメーションを見ながら、体が畳に触れる瞬間を音に変える3つの方法を聴いていただきます。それぞれの後に、4つの短い質問に答えてください。",
+  introUse:"アニメーションは受け身を外から見たものです。実際の使用では、自分の体が見えない状態で受け身をとっている最中に音が鳴ります。",
   intro2:"端末の音をオンにしてください（iPhoneはサイレントモードを解除）。できればヘッドホンをご使用ください。正解・不正解はありません。",
   consent:"私は18歳以上であり、データに関する説明を読んだうえで、本研究への参加に同意します。回答は匿名であること、また送信前であればいつでも中止できることを理解しています。",
   dataTitle:"データの取り扱いについて（GDPR）",
@@ -265,8 +268,6 @@ function draw(cv,lv,u,flashes){
  const p=poseAt(lv,u), P=j=>[X(p[j][0]),Y(p[j][1])];
  // flashes under figure
  const now=performance.now();
- flashes.forEach(f=>{const age=(now-f.at)/600; if(age>1)return; const [x,y]=P(CJ[f.c]);
-  g.fillStyle=css(CCOL[f.c]); g.globalAlpha=(1-age)*.55; g.beginPath(); g.arc(x,y,(10+26*age)*dpr,0,7); g.fill(); g.globalAlpha=1;});
  g.lineCap="round"; g.lineJoin="round"; g.strokeStyle=css("--fg"); g.lineWidth=5*dpr;
  const line=js=>{g.beginPath(); js.forEach((j,i)=>{const [x,y]=P(j); i?g.lineTo(x,y):g.moveTo(x,y);}); g.stroke();};
  line(["foot","ankle","knee","hip"]);
@@ -319,7 +320,6 @@ const SYN={
 function makeStage(modeId,stateRef,onPlayed){
  const el=document.createElement("div"); el.className="stage";
  el.innerHTML=`<canvas aria-label="Animated backward breakfall"></canvas>
-  <div class="legend"><span style="--c:var(--hips)">${tt("hips")}</span><span style="--c:var(--slap)">${tt("slap")}</span><span style="--c:var(--back)">${tt("backC")}</span></div>
   <div class="stagebar"><div class="levels" role="group"></div>
    <div class="play"><span class="plays"></span><button class="btn" type="button">${tt("play")}</button></div></div>`;
  const cv=el.querySelector("canvas"),lvBox=el.querySelector(".levels"),btn=el.querySelector(".btn"),pc=el.querySelector(".plays");
@@ -398,7 +398,7 @@ function go(s){S.step=s; render(); window.scrollTo({top:0});}
 
 function vIntro(){
  const s=h(`<section class="step"><div><div class="eyebrow">${tt("introEyebrow")}</div><h1>${tt("introTitle")}</h1>
-  <p>${tt("intro1")}</p><p class="muted">${tt("intro2")}</p></div>
+  <p>${tt("intro1")}</p><p>${tt("introUse")}</p><p class="muted">${tt("intro2")}</p></div>
   <details class="gdpr"><summary>${tt("dataTitle")}</summary><dl>${tt("data").map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl></details>
   <label class="consent"><input type="checkbox" id="consent"><span>${tt("consent")}</span></label></section>`);
  const cb=s.querySelector("#consent"); cb.checked=S.consent; cb.onchange=()=>S.consent=cb.checked;
@@ -470,7 +470,7 @@ function vRank(){
 function record(){
  const P=S.profile, rec={pid:"P"+Date.now().toString(36).toUpperCase(),timestamp:new Date().toISOString(),lang,
   belt:BELT_IDS[+P.belt],years:+P.years,music:MUS_IDS[+P.music],age:AGE_IDS[+P.age],
-  order:S.order.join(">"),order_source:S.orderSource,duration_s:Math.round((Date.now()-S.started)/1000),comments:S.comments.trim()};
+  version:VERSION,order:S.order.join(">"),order_source:S.orderSource,duration_s:Math.round((Date.now()-S.started)/1000),comments:S.comments.trim()};
  MODES.forEach(m=>{const R=S.r[m]; rec[m+"_letter"]=LET[S.order.indexOf(m)]; rec[m+"_position"]=S.order.indexOf(m)+1;
   R.q.forEach((v,i)=>rec[`${m}_q${i+1}`]=v); rec[m+"_plays"]=R.plays; rec[m+"_levels"]=R.levels.join("|"); rec[m+"_rank"]=S.rank[m];});
  return rec;
